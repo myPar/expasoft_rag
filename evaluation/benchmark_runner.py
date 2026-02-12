@@ -13,6 +13,7 @@ class AsyncBenchmarkRunner:
 
     async def run(
         self,
+        query_engine,
         bench_data: List[Query],
         save_results = True,
         dst_dir = ".",
@@ -22,10 +23,10 @@ class AsyncBenchmarkRunner:
 
         async def worker(query):
             async with self.sem:
-                return query.uid, await self.evaluator.evaluate(query)
+                return query.uid, await self.evaluator.evaluate(query_engine, query)
 
         tasks = [
-            asyncio.create_task(worker(q)) for q in bench_data
+            asyncio.create_task(worker(Query.from_dict(q))) for q in bench_data
         ]
 
         metric_names = [m.name for m in self.evaluator.metrics]

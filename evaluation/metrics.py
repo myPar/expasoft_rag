@@ -1,4 +1,8 @@
 from ragas import SingleTurnSample
+from ragas.metrics import LLMContextPrecisionWithoutReference
+from ragas.metrics import AnswerCorrectness
+from ragas.metrics import Faithfulness
+from ragas.metrics import LLMContextRecall
 
 
 class RagasMetric:
@@ -21,3 +25,12 @@ class RagasMetric:
         )
 
         return await self.metric.single_turn_ascore(sample)
+    
+
+def get_main_metrics(judge_llm):
+    context_recall = RagasMetric(LLMContextRecall, llm=judge_llm, name='context_recall')
+    answer_correctness = RagasMetric(AnswerCorrectness, llm=judge_llm, name='answer_correctness', weights=[1, 0])
+    context_precision = RagasMetric(LLMContextPrecisionWithoutReference, llm=judge_llm, name='context_precision')
+    faithfulness = RagasMetric(Faithfulness, llm=judge_llm, name='faithfulness')
+
+    return [context_recall, context_precision, answer_correctness, faithfulness]

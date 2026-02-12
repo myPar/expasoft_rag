@@ -20,7 +20,7 @@ def get_no_wiki_queries(queries):
     return answer
 
 
-def create_test_bench(bench_size, queries: list[dict], random_state = 42):
+def create_bench(bench_size, queries: list[dict], random_state = 42):
     skip_queries: set = get_no_wiki_queries(queries)
     # filter bad queries: no answer paragraphs or in skip_queries
     queries = [q for q in queries if len(q['paragraphs_uids']['with_answer']) > 0 and q['uid'] not in skip_queries]

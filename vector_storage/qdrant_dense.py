@@ -3,9 +3,10 @@ from itertools import count
 from qdrant_client import AsyncQdrantClient, QdrantClient, models
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from tqdm import tqdm
+from .base import BaseQdrantStoreFactory
 
 
-class QdrantDenseStoreFactory:
+class QdrantDenseStoreFactory(BaseQdrantStoreFactory):
     """
     Factory для создания и наполнения dense-only коллекций в Qdrant.
     """

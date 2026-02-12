@@ -2,9 +2,7 @@ import json
 from llama_index.llms.openrouter import OpenRouter
 
 
-def create_llm(config_path:str, llm_name: str):
-    with open(config_path, 'r', encoding='utf-8') as f:
-        config = json.load(f)
+def create_llm(config: dict, llm_name: str):
     token = config['token']
     llm_config = config[llm_name]
 

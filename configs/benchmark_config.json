@@ -33,6 +33,7 @@
     "qdrant": {
         "database":"database_name",
         "port": 6333
-    }
-    
+    },
+    "request_attempts":3,
+    "max_concurrent": 8
 }

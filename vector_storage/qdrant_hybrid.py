@@ -7,6 +7,7 @@ from fastembed import SparseTextEmbedding
 import pickle
 import os
 from typing import List
+from .base import BaseQdrantStoreFactory
 
 
 sparse_embedder = SparseTextEmbedding(model_name="Qdrant/bm25", language="russian")
@@ -24,7 +25,7 @@ def sparse_doc_fn(texts):
     return list(sparse_embedder.embed(texts))
 
 
-class QdrantHybridStoreFactory:
+class QdrantHybridStoreFactory(BaseQdrantStoreFactory):
     def __init__(
         self,
         url: str = "http://localhost:6333",
