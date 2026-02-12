@@ -1,0 +1,38 @@
+{
+    "open_router_token":"",
+    "engine_llm": {
+        "max_tokens": 2024,
+        "context": 8192,
+        "model":"qwen/qwen3-14b",
+        "response_timeout": 1440,
+        "max_retries": 5,
+        "provider": {
+            "only": ["DeepInfra"],
+            "quantizations": ["fp8"],
+            "allow_fallbacks": false,
+            "require_parameters": true
+            }        
+    },
+    "judge_llm": {
+        "max_tokens": 8192,
+        "context": 8192,
+        "model":"qwen/qwen3-next-80b-a3b-instruct",
+        "response_timeout": 1440,
+        "max_retries": 5,
+        "provider": {
+            "only": ["Hyperbolic", "DeepInfra"],
+            "quantizations": ["bf16"],
+            "allow_fallbacks": true,
+            "require_parameters": true
+        }        
+    },
+    "benchmark": {
+        "random_state": 42,
+        "size": 1000
+    },
+    "qdrant": {
+        "database":"database_name",
+        "port": 6333
+    }
+    
+}
