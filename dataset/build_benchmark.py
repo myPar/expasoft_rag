@@ -3,7 +3,7 @@ import json
 
 
 # get paragraphs to remove:
-with open('no_wiki_paragraphs.json', 'r', encoding='utf-8') as f:
+with open('dataset/doc_base/no_wiki_paragraphs.json', 'r', encoding='utf-8') as f:
     no_wiki_paragraphs = json.loads(f.read())
 no_wiki_pids = {par['uid'] for par in no_wiki_paragraphs}
 

@@ -1,5 +1,5 @@
 {
-    "open_router_token":"",
+    "token":"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",
     "engine_llm": {
         "max_tokens": 2024,
         "context": 8192,
@@ -15,25 +15,24 @@
     },
     "judge_llm": {
         "max_tokens": 8192,
-        "context": 8192,
         "model":"qwen/qwen3-next-80b-a3b-instruct",
         "response_timeout": 1440,
         "max_retries": 5,
         "provider": {
-            "only": ["Hyperbolic", "DeepInfra"],
-            "quantizations": ["bf16"],
+            "only": ["Chutes", "DeepInfra"],
+            "quantizations": ["bf16", "fp8"],
             "allow_fallbacks": true,
             "require_parameters": true
-        }        
+        }   
     },
     "benchmark": {
         "random_state": 42,
-        "size": 1000
+        "size": 10
     },
     "qdrant": {
         "database":"database_name",
         "port": 6333
     },
-    "request_attempts":3,
+    "request_attempts": 3,
     "max_concurrent": 8
 }

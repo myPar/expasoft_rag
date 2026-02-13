@@ -23,7 +23,7 @@ class AsyncBenchmarkRunner:
 
         async def worker(query):
             async with self.sem:
-                return query.uid, await self.evaluator.evaluate(query_engine, query)
+                return query.uid, await self.evaluator.evaluate(query_engine=query_engine, query=query)
 
         tasks = [
             asyncio.create_task(worker(Query.from_dict(q))) for q in bench_data

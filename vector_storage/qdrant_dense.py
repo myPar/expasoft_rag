@@ -32,6 +32,7 @@ class QdrantDenseStoreFactory(BaseQdrantStoreFactory):
         exists = await self.async_client.collection_exists(collection_name)
 
         if exists and recreate:
+            print(f'recreate is enabled, delete current collection - {collection_name}')
             await self.async_client.delete_collection(collection_name)
             exists = False
 
@@ -41,7 +42,7 @@ class QdrantDenseStoreFactory(BaseQdrantStoreFactory):
                 vectors_config=models.VectorParams(
                     size=self.vector_dim,
                     distance=distance,
-                ),
+                )
             )
 
     async def ingest(
@@ -60,7 +61,7 @@ class QdrantDenseStoreFactory(BaseQdrantStoreFactory):
                 yield texts[i:i + batch_size], embeddings[i:i + batch_size]
 
         total_batches = (len(texts) + batch_size - 1) // batch_size
-        pbar = tqdm(total=total_batches)
+        pbar = tqdm(total=total_batches, desc='inserting batches to qrant database...')
 
         for batch_texts, batch_embs in batch_iter():
             await self.async_client.upsert(
@@ -82,6 +83,7 @@ class QdrantDenseStoreFactory(BaseQdrantStoreFactory):
             pbar.update(1)
 
         pbar.close()
+        print('All batches successfully inserted.')
 
     # llama index compatible Qdrant vector storage
     def as_vector_store(

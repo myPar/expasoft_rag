@@ -4,27 +4,33 @@ import numpy as np
 from transformers import AutoModel, AutoTokenizer
 from llama_index.core.embeddings import BaseEmbedding
 from typing import List
+from pydantic import PrivateAttr
 
 
 class BertaEmbedding(BaseEmbedding):
+    _tokenizer: AutoTokenizer = PrivateAttr()
+    _model: AutoModel = PrivateAttr()
+    _device: str = "cuda"
+    _query_prefix: str = ""
+    _document_prefix: str | None = None
+    _embeddings_dim: int = 768
+
     def __init__(
         self,
         model_name: str,
         device: str = "cuda",
-        pooling: str = "mean",
         document_prefix: str = "search_document: ",
         query_prefix: str = "search_query: ",
     ):
-        self.device = device
+        self._device = device
 
-        self.model = AutoModel.from_pretrained(model_name).to(self.device)
-        self.model.eval()
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.pooling = pooling
+        self._model = AutoModel.from_pretrained(model_name).to(self.device)
+        self._model.eval()
+        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        self.document_prefix = document_prefix
-        self.query_prefix = query_prefix
-        self.embeddings_dim: int = 768
+        self._document_prefix = document_prefix
+        self._query_prefix = query_prefix
+        self._embeddings_dim = 768
 
     def pool(self, hidden_state, mask, pooling_method="mean"):
         if pooling_method == "mean":
@@ -61,13 +67,13 @@ class BertaEmbedding(BaseEmbedding):
         return embeddings.cpu().numpy()
 
     def _get_text_embeddings(self, texts: list[str]) -> List[List[float]]:
-        return self._embed(texts, self.document_prefix)
+        return self._embed(texts, self._document_prefix)
 
     def _get_text_embedding(self, text: str) -> List[float]:
-        return self._embed([text], self.document_prefix)[0]
+        return self._embed([text], self._document_prefix)[0]
     
     def _get_query_embedding(self, query: str) -> List[float]:
-        return self._embed([query], self.query_prefix)[0]
+        return self._embed([query], self._query_prefix)[0]
 
     # async:
     async def _aget_query_embedding(self, query: str) -> List[float]:
@@ -75,4 +81,3 @@ class BertaEmbedding(BaseEmbedding):
 
     async def _aget_text_embedding(self, text: str) -> List[float]:
         return self._get_text_embedding(text)
-    

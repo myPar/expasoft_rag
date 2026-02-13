@@ -31,7 +31,7 @@ def build_embeddings(embedder: BaseEmbedding,
     return result_embeddings
 
 
-def load_embeddings(emb_cache_path:str):
+def load_cached_embeddings(emb_cache_path:str):
     try:
         with open(emb_cache_path, 'rb') as f:
             embeddings = pickle.load(f)

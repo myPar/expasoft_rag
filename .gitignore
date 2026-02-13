@@ -1,3 +1,6 @@
 *__pycache__
 dataset/doc_base
 *.vscode/*
+qdrant_storage/
+models/
+*.pkl

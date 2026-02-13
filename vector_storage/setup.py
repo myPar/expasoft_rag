@@ -1,7 +1,7 @@
 import sys
 import json
 from typing import Any
-from embeddings.build_embeddings import build_embeddings, load_embeddings
+from embeddings.build_embeddings import build_embeddings, load_cached_embeddings
 from .base import BaseQdrantStoreFactory
 from llama_index.core.embeddings import BaseEmbedding
 
@@ -16,7 +16,6 @@ async def setup_database(
     qdrant_factory: BaseQdrantStoreFactory,
     embedder: BaseEmbedding,
 ) -> int:
-
     # create collection (if not exists)
     try:
         await qdrant_factory.create_collection(
@@ -30,24 +29,24 @@ async def setup_database(
     if not build_database:
         return 0
 
+    # load paragraphs texts:
+    with open(paragraphs_path, "r", encoding="utf-8") as f:
+        inputs = json.load(f)[:2000]    # TODO: remove slicing (it just for debugging)
+
+    texts = [item["text"] for item in inputs]
+
     # load or build embeddings
     if load_embeddings:
         try:
-            embeddings = load_embeddings(embeddings_cache_file)
-            texts = None  # assume stored together or handled inside load
+            embeddings = load_cached_embeddings(embeddings_cache_file)
         except Exception as e:
             print(f"Failed to load embeddings: {e}", file=sys.stderr)
             return 1
     else:
         try:
-            with open(paragraphs_path, "r", encoding="utf-8") as f:
-                inputs = json.load(f)
-
-            texts = [item["text"] for item in inputs]
-
             embeddings = build_embeddings(
                 embedder,
-                inputs=texts,
+                inputs=texts,   # texts as an input
                 cache_embeddings=cache_embeddings,
                 cache_name=embeddings_cache_file,
             )
@@ -58,9 +57,9 @@ async def setup_database(
 
     # ingest
     try:
-        qdrant_factory.ingest(
+        await qdrant_factory.ingest(    # paragraphs as an input
             base_name,
-            texts=inputs if not load_embeddings else texts,
+            texts=inputs,
             dense_embeddings=embeddings,
         )
     except Exception as e:

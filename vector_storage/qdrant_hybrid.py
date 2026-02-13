@@ -42,7 +42,8 @@ class QdrantHybridStoreFactory(BaseQdrantStoreFactory):
 
         self.dense_dim = dense_dim
 
-    async def create_collection(self, collection_name: str, 
+    async def create_collection(self, 
+                                collection_name: str, 
                                 recreate:bool=False, 
                                 distance: models.Distance = models.Distance.COSINE
                                 ):

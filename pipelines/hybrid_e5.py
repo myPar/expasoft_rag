@@ -5,14 +5,13 @@ import json
 
 from embeddings.e5 import E5InstructEmbedding
 from vector_storage.qdrant_hybrid import QdrantHybridStoreFactory
-from llm.open_router import create_llm
+from llm.open_router import create_llm, create_judge_llm
 from vector_storage.setup import setup_database
 from retrievers.hybrid import HybridRetriever
 from evaluation.benchmark_runner import AsyncBenchmarkRunner
 from evaluation.evaluator import MetricsEvaluator
 from evaluation.metrics import get_main_metrics
 from dataset.build_benchmark import create_bench
-from evaluation.data import Query
 
 
 def positive_int(value: str) -> int:
@@ -31,13 +30,19 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Process similarity and sparse top-k parameters."
     )
-    parser.add_argument("--similarity_top_k", type=positive_int, required=True)
-    parser.add_argument("--sparse_top_k", type=positive_int, required=True)
+    parser.add_argument("--similarity_top_k", 
+                        type=positive_int, 
+                        default=4
+                        )
+    parser.add_argument("--sparse_top_k", 
+                        type=positive_int, 
+                        default=20
+                        )
 
     parser.add_argument(
         "--config_path",
         type=str,
-        default="../configs/benchmark_config.json",
+        default="configs/benchmark_config.json",
         help="Path to benchmark configuration file"
     )
 
@@ -56,34 +61,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--embeddings_cache_file",
         type=str,
-        default=None,
+        default='embeddings.pkl',
         help="Path to embeddings cache file."
     )
 
     parser.add_argument(
         "--paragraphs_path",
         type=str,
-        default="../dataset/doc_base/chunked_paragraphs.json",
+        default="dataset/doc_base/chunked_paragraphs.json",
         help="Path to wiki paragraphs."
     )
     parser.add_argument(
         "--queries_path",
         type=str,
-        default="../dataset/doc_base/RuBQ_2.0_test.json",
+        default="dataset/doc_base/RuBQ_2.0/RuBQ_2.0_test.json",
         help="Path to queries benchmark will build from"
     )
 
     parser.add_argument(
         "--build_database",
         action="store_true",
-        help="Create new Qdrant database with embeddings building/loading.",
+        help="Create new Qdrant database with embeddings building/loading."
     )
 
     parser.add_argument(
         "--base_name",
         type=str,
         required=True,
-        help="Qdrant database name.",
+        help="Qdrant database name."
     )
 
     return parser.parse_args()
@@ -92,7 +97,7 @@ def parse_args() -> argparse.Namespace:
 async def main(args: argparse.Namespace) -> int:
     # embedder
     embedder = E5InstructEmbedding()
-    embeddings_dim = embedder.embeddings_dim
+    embeddings_dim = embedder._embeddings_dim
 
     # storage
     qdrant_factory = QdrantHybridStoreFactory(dense_dim=embeddings_dim)
@@ -106,7 +111,6 @@ async def main(args: argparse.Namespace) -> int:
                          embeddings_cache_file=args.embeddings_cache_file,
                          paragraphs_path=args.paragraphs_path
                          )
-
     # get qdrant storage compatible with llamaindex
     qdrant_storage = qdrant_factory.as_vector_store(args.base_name)
 
@@ -117,7 +121,7 @@ async def main(args: argparse.Namespace) -> int:
         queries = json.load(f)
     # llms:
     engine_llm = create_llm(config, 'engine_llm')
-    judge_llm = create_llm(config, 'judge_llm')
+    judge_llm = create_judge_llm(config, 'judge_llm')
 
     # retriever:
     hybrid_retriever = HybridRetriever(qdrant_storage, 
